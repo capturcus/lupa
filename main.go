@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -154,7 +153,6 @@ func main() {
 		os.Exit(1)
 	}
 	traverse(firstNode)
-	time.Sleep(time.Second)
 	/*
 		for _, node := range nodes {
 			fmt.Println("TARGET", node.Target.Name)
@@ -173,3 +171,11 @@ func main() {
 		fmt.Printf("SCRIPT:\n%s\n", target.Script)
 	}*/
 }
+
+/*
+
+TODO:
+add waitgroup
+add timestamp check
+
+*/
