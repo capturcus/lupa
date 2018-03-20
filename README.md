@@ -15,7 +15,7 @@ Składnia Lupafile
 
 `<dependencies>`: oddzielone spacjami targety i/lub pliki. Lupa odróżnia targety lupowe od plików tym, że targety nie zawierają innych znaków niż alfanumeryki, underscore i kropki. Lupa wspiera rekurencyjne selektory do plików (np `./**/*.go` oznacza wszystkie pliki z rozszerzeniem `.go` w tym folderze i we wszystkich podfolderach).
 
-`<recipe>`: zwykły skrypt w bashu. **Wszystkie linijki muszą zaczynać się od tabulatora!**
+`<recipe>`: zwykły skrypt w bashu. **Wszystkie linijki muszą zaczynać się od tabulatora lub czterech spacji!**
 
 Można wrzucać komentarze zaczynające się od `#`.
 

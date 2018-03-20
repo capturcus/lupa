@@ -1,0 +1,11 @@
+test:
+    echo ass
+
+frontendbuild: ./frontend/src/**/*.* test
+    echo frontendbuild
+
+# tworzy plik wykonywalny o nazwie "backend"
+backend: ./**/*.go test
+    echo backend
+
+all: backend frontendbuild
