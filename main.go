@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/sirupsen/logrus"
 )
@@ -49,7 +50,7 @@ type Edge struct {
 	dep    string
 }
 
-var allReady chan int
+var maxTargetLength int
 
 func nodifyTargets(targets []*LupaTarget) (map[string]*LupaNode, error) {
 	nodeMap := make(map[string]*LupaNode, 0)
@@ -57,6 +58,9 @@ func nodifyTargets(targets []*LupaTarget) (map[string]*LupaNode, error) {
 	edges := make([]Edge, 0)
 
 	for _, target := range targets {
+		if utf8.RuneCountInString(target.Name) > maxTargetLength {
+			maxTargetLength = utf8.RuneCountInString(target.Name)
+		}
 		nodeMap[target.Name] = &LupaNode{Target: target, Mutex: &sync.Mutex{}, Dependencies: make([]*LupaNode, 0), Children: make([]*LupaNode, 0), State: UNVISITED}
 		for _, dep := range target.LupaDeps {
 			edges = append(edges, Edge{target: target.Name, dep: dep})
@@ -65,7 +69,11 @@ func nodifyTargets(targets []*LupaTarget) (map[string]*LupaNode, error) {
 
 	for _, edge := range edges {
 		target := nodeMap[edge.target]
-		dep := nodeMap[edge.dep]
+		dep, ok := nodeMap[edge.dep]
+		if !ok {
+			fmt.Println("could not find recipe for target:", edge.dep)
+			os.Exit(1)
+		}
 		target.Dependencies = append(target.Dependencies, dep)
 		dep.Children = append(dep.Children, target)
 	}
@@ -152,7 +160,14 @@ func main() {
 		fmt.Println("could not find target: " + userTarget)
 		os.Exit(1)
 	}
-	traverse(firstNode)
+
+	wg := sync.WaitGroup{}
+
+	traverse(firstNode, &wg)
+
+	wg.Wait()
+
+	// time.Sleep(time.Millisecond * 200)
 	/*
 		for _, node := range nodes {
 			fmt.Println("TARGET", node.Target.Name)
@@ -164,18 +179,11 @@ func main() {
 			}
 			fmt.Println()
 		}*/
-	/*for _, target := range targets {
-		fmt.Println("TARGET NAME", target.Name)
-		fmt.Println("FILE DEPS", target.FileDeps)
-		fmt.Println("LUPA DEPS", target.LupaDeps)
-		fmt.Printf("SCRIPT:\n%s\n", target.Script)
-	}*/
 }
 
 /*
 
 TODO:
-add waitgroup
 add timestamp check
 
 */

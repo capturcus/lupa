@@ -15,3 +15,12 @@ func printNode(node *LupaNode) {
 	}
 	fmt.Printf("(%s | DEPS %s | CHILDREN %s)\n", node.Target.Name, deps, children)
 }
+
+func printTargets(targets []*LupaTarget) {
+	for _, target := range targets {
+		fmt.Println("TARGET NAME", target.Name)
+		fmt.Println("FILE DEPS", target.FileDeps)
+		fmt.Println("LUPA DEPS", target.LupaDeps)
+		fmt.Printf("SCRIPT:\n%s\n", target.Script)
+	}
+}

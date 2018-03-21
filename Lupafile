@@ -1,11 +1,23 @@
-test:
-    echo ass
+s1:
+    echo "s1, ten boczny"
+e1:
+    echo "e1 końcowy"
+r1:
+    echo "r1 końcowy"
+i2: r1
+    echo "prawy i"
 
-frontendbuild: ./frontend/src/**/*.* test
-    echo frontendbuild
+i1: e1 r1
+    echo "lewy i"
 
-# tworzy plik wykonywalny o nazwie "backend"
-backend: ./**/*.go test
-    echo backend
+n3: i1 i2
+    echo "n3"
 
-all: backend frontendbuild
+n2: i1
+    echo "n2"
+
+n1: e1
+    echo "n1"
+
+all: s1 n1 n2 n3
+    echo "all"
