@@ -104,19 +104,17 @@ func shouldExecute(node *LupaNode) bool {
 
 func executeNode(node *LupaNode, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// fmt.Printf("executing %s\n", node.Target.Name)
-	if shouldExecute(node) {
+	if node.State != READY { // hacksssss
+		// fmt.Printf("executing %s\n", node.Target.Name)
 		err := executeScript(node.Target.Name, node.Target.Script)
 		if err != nil {
 			fmt.Printf("[ERROR] %s: %s\n", node.Target.Name, err.Error())
 			os.Exit(1)
 		}
-	} else {
-		fmt.Println("nothing to be done for", node.Target.Name)
+		node.Mutex.Lock()
+		node.State = READY
+		node.Mutex.Unlock()
 	}
-	node.Mutex.Lock()
-	node.State = READY
-	node.Mutex.Unlock()
 	for _, child := range node.Children {
 		checkAndExecute(child, wg)
 	}
@@ -152,6 +150,13 @@ func traverse(node *LupaNode, wg *sync.WaitGroup) {
 	// fmt.Println("traversing\n", node.Target.Name)
 	node.Mutex.Lock()
 	node.State = SELECTED
+	if !shouldExecute(node) {
+		node.State = READY
+		wg.Add(1)
+		go executeNode(node, wg) // this will know not to do anything because of state READY, sorry for hacks
+		fmt.Println("nothing to be done for " + node.Target.Name)
+		return // do not traverse further
+	}
 	if len(node.Dependencies) == 0 {
 		node.State = EXECUTING
 		wg.Add(1)
