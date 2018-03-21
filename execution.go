@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"unicode/utf8"
+
+	"github.com/mattn/go-zglob"
 )
 
 func spacePad(numSpaces int, targetName, message string) string {
@@ -57,18 +59,60 @@ func executeScript(targetName string, script string) error {
 	}
 	err = cmd.Wait()
 	if err != nil {
-		return webframework.ReturnError(err)
+		return err
 	}
 	return nil
+}
+
+func shouldExecute(node *LupaNode) bool {
+	info, err := os.Stat(node.Target.Name)
+	if err != nil {
+		switch v := err.(type) {
+		case *os.PathError:
+			_ = v
+			// file not found, we should execute the script to create it
+			return true
+		default:
+			panic(err)
+		}
+	}
+	targetModTime := info.ModTime()
+	matches := make([]string, 0)
+	for _, fileDep := range node.Target.FileDeps {
+		depMatches, err := zglob.Glob(fileDep)
+		if err != nil {
+			if err.Error() == "file does not exist" {
+				fmt.Println(node.Target.Name + ": could not find file dependency " + fileDep)
+				os.Exit(1)
+			}
+			panic(err)
+		}
+		matches = append(matches, depMatches...)
+	}
+	for _, fileDep := range matches {
+		info, err := os.Stat(fileDep)
+		if err != nil {
+			panic(err)
+		}
+		// found a file newer than the target file, remake
+		if info.ModTime().After(targetModTime) {
+			return true
+		}
+	}
+	return false
 }
 
 func executeNode(node *LupaNode, wg *sync.WaitGroup) {
 	defer wg.Done()
 	// fmt.Printf("executing %s\n", node.Target.Name)
-	err := executeScript(node.Target.Name, node.Target.Script)
-	if err != nil {
-		fmt.Println("ERROR: " + err.Error())
-		os.Exit(1)
+	if shouldExecute(node) {
+		err := executeScript(node.Target.Name, node.Target.Script)
+		if err != nil {
+			fmt.Printf("[ERROR] %s: %s\n", node.Target.Name, err.Error())
+			os.Exit(1)
+		}
+	} else {
+		fmt.Println("nothing to be done for", node.Target.Name)
 	}
 	node.Mutex.Lock()
 	node.State = READY

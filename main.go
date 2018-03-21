@@ -184,6 +184,5 @@ func main() {
 /*
 
 TODO:
-add timestamp check
-
+variables?
 */

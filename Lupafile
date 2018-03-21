@@ -1,23 +1,7 @@
-s1:
-    echo "s1, ten boczny"
-e1:
-    echo "e1 końcowy"
-r1:
-    echo "r1 końcowy"
-i2: r1
-    echo "prawy i"
+test2:
+    echo "no witam"
 
-i1: e1 r1
-    echo "lewy i"
+test: ./input
+    cat input > test
 
-n3: i1 i2
-    echo "n3"
-
-n2: i1
-    echo "n2"
-
-n1: e1
-    echo "n1"
-
-all: s1 n1 n2 n3
-    echo "all"
+all: test test2

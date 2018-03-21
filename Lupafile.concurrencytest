@@ -1,0 +1,23 @@
+s1:
+    echo "s1 końcowy"
+e1:
+    echo "e1 końcowy"
+r1:
+    echo "r1 końcowy"
+i2: r1
+    echo "prawy i"
+
+i1: e1 r1
+    echo "lewy i"
+
+n3: i1 i2
+    echo "n3"
+
+n2: i1
+    echo "n2"
+
+n1: e1
+    echo "n1"
+
+all: s1 n1 n2 n3
+    echo "all"
